@@ -1,29 +1,36 @@
 project:
   name: Storify
-  active_phase: 0
+  active_phase: 1
   audited_commit: "920c142"
-  overall_completion_percent: 28
-  production_readiness_percent: 8
-  last_updated: "2026-07-25"
+  overall_completion_percent: 42
+  production_readiness_percent: 22
+  last_updated: "2026-07-26"
   preferred_remote: "https://github.com/shatasolutions/storify.git"
 
 phases:
   - id: 0
     name: Governance and Project Control
-    status: IN_PROGRESS
+    status: VERIFIED
     entry_criteria: ["repository_access", "audit_available"]
-    exit_criteria: ["docs_validate_pass", "agents_md_exists", "master_plan_exists", "adrs_0001_0012", "handoff_current", "phase_01_not_started"]
-    evidence: ["docs/", "AGENTS.md", ".cursor/rules/"]
-    blockers: ["push_requires_owner_confirmation"]
-    next_task: "Complete docs:validate and local commit; then Phase 01 reproduce failures"
+    exit_criteria: ["docs_validate_pass", "agents_md_exists", "master_plan_exists", "adrs_0001_0012", "handoff_current"]
+    evidence: ["docs/", "AGENTS.md", "ea68d30"]
+    blockers: []
+    next_task: "Maintain OS; do not regress docs:validate"
   - id: 1
     name: Rescue and Security
-    status: NOT_STARTED
+    status: PARTIAL
     entry_criteria: ["phase_00_exit_or_waiver"]
-    exit_criteria: ["build_pass", "critical_security_closed_or_deferred", "ci_green"]
-    evidence: []
-    blockers: []
-    next_task: "Reproduce build/tsc/lint/env/auth/payment/API failures from 920c142"
+    exit_criteria: ["build_pass", "critical_security_closed_or_deferred", "ci_green", "live_supabase_rls_proof", "stripe_webhook_e2e"]
+    evidence:
+      - "npm run build/tsc/lint/test green"
+      - "supabase/migrations/202607260001_phase01_baseline.sql"
+      - "signed webhook + server pricing"
+      - "docs/operations/github-actions/phase01-quality.yml"
+    blockers:
+      - "BLOCKED_EXTERNAL: live Supabase migration apply"
+      - "BLOCKED_EXTERNAL: Stripe CLI webhook E2E"
+      - "BLOCKED_EXTERNAL: workflow OAuth scope for .github/workflows/"
+    next_task: "Apply baseline migration to non-prod Supabase; verify Stripe webhook with CLI"
   - id: 2
     name: Multi-Tenant Foundation
     status: NOT_STARTED
@@ -81,7 +88,7 @@ phases:
     blockers: []
     next_task: ""
   - id: 9
-    name: POS and Industry Packs
+    name: Analytics and Growth
     status: NOT_STARTED
     entry_criteria: ["phase_08_verified"]
     exit_criteria: []
@@ -89,7 +96,7 @@ phases:
     blockers: []
     next_task: ""
   - id: 10
-    name: B2B and International
+    name: Hardening and Compliance
     status: NOT_STARTED
     entry_criteria: ["phase_09_verified"]
     exit_criteria: []
@@ -97,7 +104,7 @@ phases:
     blockers: []
     next_task: ""
   - id: 11
-    name: Developer Platform and Marketplace
+    name: Scale and Reliability
     status: NOT_STARTED
     entry_criteria: ["phase_10_verified"]
     exit_criteria: []
@@ -105,7 +112,7 @@ phases:
     blockers: []
     next_task: ""
   - id: 12
-    name: Buyer Network
+    name: Launch Readiness
     status: NOT_STARTED
     entry_criteria: ["phase_11_verified"]
     exit_criteria: []
@@ -113,7 +120,7 @@ phases:
     blockers: []
     next_task: ""
   - id: 13
-    name: Enterprise and Scale
+    name: Post-Launch Iteration
     status: NOT_STARTED
     entry_criteria: ["phase_12_verified"]
     exit_criteria: []

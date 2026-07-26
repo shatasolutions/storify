@@ -4,15 +4,15 @@
 
 | Field | Value |
 |-------|-------|
-| Active phase | **00 — Governance and Project Control** |
-| Status | `IN_PROGRESS` / `PARTIAL` |
-| Objective | Establish docs OS, ADRs, status, agent rules, validation |
-| Current epic | Documentation OS completion + local commit |
-| Current task | Finish remaining OS files, run docs:validate, commit |
-| Entry criteria | Met (repo + audit available) |
-| Exit gate | docs:validate pass; handoff; Phase 01 still NOT_STARTED; commit created |
-| Blockers | Push deferred until owner confirms |
-| Latest evidence | Files under docs/, AGENTS.md, Cursor rules |
-| Exact next action after Phase 00 | Reproduce Phase 01 baseline failures from `920c142` |
+| Active phase | **01 — Rescue and Security** |
+| Status | `PARTIAL` |
+| Objective | Buildable, typed, linted, schema-owned, authz-safe commerce prototype |
+| Current epic | External verification (Supabase apply + Stripe webhook E2E + CI on GitHub) |
+| Current task | Apply baseline migration to a safe Supabase project; confirm webhook with Stripe CLI |
+| Entry criteria | Phase 00 VERIFIED (`ea68d30` on `origin/main`) |
+| Exit gate | Remaining external proofs before `VERIFIED` |
+| Blockers | Live Supabase/Stripe verification; optional workflow-scope for CI publish |
+| Exact next action | Apply Phase 01 migration to non-prod Supabase and verify signed webhook end-to-end |
 
-Phase 01 status: **NOT_STARTED** (do not begin implementation in this docs session beyond OS).
+Phase 00 status: **VERIFIED**.
+Phase 02+: **NOT_STARTED** (do not start).
