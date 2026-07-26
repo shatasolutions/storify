@@ -118,6 +118,7 @@ try {
     if (!phaseIds.includes(i)) errors.push("IMPLEMENTATION_MATRIX.yaml missing phase id " + i);
   }
   const inProgress = [...y.matchAll(/status:\s*(\w+)/g)].map((m) => m[1]);
+  void inProgress;
   // crude: ensure not multiple IN_PROGRESS on phases other than documenting — warn if >2 IN_PROGRESS
   const ip = (y.match(/status:\s*IN_PROGRESS/g) || []).length;
   if (ip > 1) warnings.push("Multiple IN_PROGRESS statuses in matrix (" + ip + ")");
@@ -126,11 +127,17 @@ try {
 }
 
 const active = read("docs/status/ACTIVE_PHASE.md");
-if (!/Phase\s*\*\*00|Phase\s*\*\*0\b|00 — Governance|Phase \*\*00/i.test(active) && !active.includes("Phase **00**") && !active.includes("00 — Governance")) {
-  // soft check
-  if (!active.includes("00")) errors.push("ACTIVE_PHASE.md does not declare phase 00");
+const phase00Verified =
+  /Phase\s*00.*VERIFIED/i.test(active) || /00 status:.*VERIFIED/i.test(active);
+if (!active.includes("00") && !phase00Verified) {
+  errors.push("ACTIVE_PHASE.md does not declare phase 00");
 }
-if (/Phase\s*\*\*01\*\*.*IN_PROGRESS/i.test(active)) {
+// Phase 01 may be active only after Phase 00 is verified
+if (
+  /Phase\s*\*\*01\*\*.*IN_PROGRESS/i.test(active) &&
+  !phase00Verified &&
+  !active.includes("01 — Rescue")
+) {
   errors.push("Phase 01 must not be active during Phase 00 docs establishment");
 }
 

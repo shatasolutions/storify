@@ -1,0 +1,44 @@
+name: Phase 01 Quality Gates
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Clean install
+        run: npm ci
+
+      - name: Validate project docs
+        run: npm run docs:validate
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit and contract tests
+        run: npm test
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: public-anon-key-for-ci
+          NEXT_PUBLIC_BASE_URL: http://localhost:3000
+        run: npm run build
+
+      - name: Diff whitespace check
+        run: git diff --check
