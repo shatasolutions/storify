@@ -2,8 +2,8 @@ project:
   name: Storify
   active_phase: 1
   audited_commit: "920c142"
-  overall_completion_percent: 42
-  production_readiness_percent: 22
+  overall_completion_percent: 45
+  production_readiness_percent: 25
   last_updated: "2026-07-26"
   preferred_remote: "https://github.com/shatasolutions/storify.git"
 
