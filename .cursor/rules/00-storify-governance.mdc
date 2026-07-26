@@ -1,0 +1,32 @@
+---
+description: Storify always-on governance — agents must follow AGENTS.md, phase gates, status, and no-duplication rules
+alwaysApply: true
+---
+
+# Storify Governance (Always On)
+
+Before any non-trivial work:
+
+1. Read and obey root `AGENTS.md` (canonical).
+2. Read `docs/status/CURRENT_STATE.md` and `docs/status/ACTIVE_PHASE.md`.
+3. Open the active phase document under `docs/execution/`.
+4. Inspect `git status`, branch, and remotes. Do not discard user work.
+5. Search for existing implementations before creating routes, components, APIs, clients, or tables.
+
+## Hard rules
+
+- Preserve canonical architecture documented under `docs/architecture/`.
+- Do **not** create duplicate Headers, Layouts, cart APIs/tables, product-detail route concepts, or Supabase client stacks.
+- Do **not** bypass phase entry/exit gates (`docs/master-plan/PHASE_GATES.md`).
+- Do **not** bypass security gates (`docs/security/SECURITY_GATES.md`).
+- Never claim completion without evidence and acceptance criteria.
+- After meaningful work: update status files + `docs/handoffs/AGENT_HANDOFF.md`.
+- Run phase-required checks; record pass/fail evidence.
+- Stop at phase boundaries. Phase 01 is rescue/security — not feature expansion — until gates pass.
+- Never commit secrets. Never force-push `main`.
+
+## Current OS context
+
+- Audited application baseline: commit `920c142`
+- Preferred remote: `shatasolutions/storify`
+- Application completion (~28%) and production readiness (~8%) are audit estimates; docs-only work does not improve them.

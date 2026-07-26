@@ -1,0 +1,48 @@
+---
+description: Storify code quality — TypeScript, server authority, tenancy, testing, a11y
+alwaysApply: true
+globs:
+  - "**/*.{ts,tsx,js,jsx,mjs,sql}"
+---
+
+# Storify Code Quality
+
+When writing or reviewing application code (Phase 01+):
+
+## TypeScript & validation
+
+- Keep TypeScript strict; do not weaken `tsconfig` to hide errors.
+- Validate all external input (HTTP body/query, webhooks, AI tool args) with explicit schemas.
+- Prefer shared domain types over duplicated inline shapes.
+
+## Server authority
+
+- Prices, discounts, tax, inventory availability, and payment amounts are **server-authoritative**.
+- Never trust client-supplied monetary values for checkout.
+- Never authorize using client-supplied `user_id`, `store_id`, or `organization_id` alone.
+
+## Service role & secrets
+
+- Service-role Supabase keys: server-only, never `NEXT_PUBLIC_*`, never client components.
+- Prefer user-scoped clients + RLS for user data; service role only for trusted server jobs (e.g. verified webhooks).
+
+## Errors & observability
+
+- Return stable error codes to clients; do not leak secrets or stack traces in production responses.
+- Log with request/correlation IDs where available; never log secret values.
+
+## Testing
+
+- New commerce/auth/payment behavior needs tests matching acceptance criteria.
+- RLS and webhook signature behavior require automated coverage when touched.
+
+## UX quality
+
+- Loading, empty, and error states required for user-facing flows.
+- Accessibility and mobile responsiveness are part of Definition of Done.
+- Do not hardcode a single tenant identity in application logic.
+
+## Docs
+
+- Update architecture/status docs when behavior or contracts change.
+- Follow `docs/engineering/DEFINITION_OF_DONE.md`.

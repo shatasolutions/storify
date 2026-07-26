@@ -1,0 +1,26 @@
+---
+description: Storify phase execution workflow — read, inspect, plan, implement, test, review, docs, status, handoff, commit
+alwaysApply: true
+---
+
+# Storify Phase Execution Workflow
+
+Every implementation session must follow this order:
+
+1. **Read** — `AGENTS.md`, current state, active phase, relevant ADRs
+2. **Inspect** — git, existing code, duplicates, blockers
+3. **Plan** — confirm scope/non-scope and acceptance criteria
+4. **Implement** — only in-scope work; no duplicate concepts
+5. **Test** — phase-required checks; record evidence
+6. **Review** — security, tenancy, DoD checklist
+7. **Update documentation** — architecture/ops as needed
+8. **Update status** — CURRENT_STATE, IMPLEMENTATION_STATUS, MATRIX, ACTIVE_PHASE, CHANGELOG
+9. **Create handoff** — `docs/handoffs/AGENT_HANDOFF.md`
+10. **Commit** — only when authorized; never force-push main
+
+## Gates
+
+- Do not start a phase until entry criteria pass.
+- Do not mark a phase complete until exit gates in the phase file and `docs/master-plan/PHASE_GATES.md` pass.
+- Do not begin Phase 01 product rescue until Phase 00 is complete enough per exit criteria (or owner waiver).
+- External blockers → record and continue only on unblocked tasks in the same phase.

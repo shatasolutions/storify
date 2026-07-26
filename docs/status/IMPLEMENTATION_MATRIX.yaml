@@ -1,0 +1,122 @@
+project:
+  name: Storify
+  active_phase: 0
+  audited_commit: "920c142"
+  overall_completion_percent: 28
+  production_readiness_percent: 8
+  last_updated: "2026-07-25"
+  preferred_remote: "https://github.com/shatasolutions/storify.git"
+
+phases:
+  - id: 0
+    name: Governance and Project Control
+    status: IN_PROGRESS
+    entry_criteria: ["repository_access", "audit_available"]
+    exit_criteria: ["docs_validate_pass", "agents_md_exists", "master_plan_exists", "adrs_0001_0012", "handoff_current", "phase_01_not_started"]
+    evidence: ["docs/", "AGENTS.md", ".cursor/rules/"]
+    blockers: ["push_requires_owner_confirmation"]
+    next_task: "Complete docs:validate and local commit; then Phase 01 reproduce failures"
+  - id: 1
+    name: Rescue and Security
+    status: NOT_STARTED
+    entry_criteria: ["phase_00_exit_or_waiver"]
+    exit_criteria: ["build_pass", "critical_security_closed_or_deferred", "ci_green"]
+    evidence: []
+    blockers: []
+    next_task: "Reproduce build/tsc/lint/env/auth/payment/API failures from 920c142"
+  - id: 2
+    name: Multi-Tenant Foundation
+    status: NOT_STARTED
+    entry_criteria: ["phase_01_verified"]
+    exit_criteria: []
+    evidence: []
+    blockers: []
+    next_task: ""
+  - id: 3
+    name: Commerce Core
+    status: NOT_STARTED
+    entry_criteria: ["phase_02_verified"]
+    exit_criteria: []
+    evidence: []
+    blockers: []
+    next_task: ""
+  - id: 4
+    name: Merchant Administration
+    status: NOT_STARTED
+    entry_criteria: ["phase_03_verified"]
+    exit_criteria: []
+    evidence: []
+    blockers: []
+    next_task: ""
+  - id: 5
+    name: Storefront and Theme Builder
+    status: NOT_STARTED
+    entry_criteria: ["phase_04_verified"]
+    exit_criteria: []
+    evidence: []
+    blockers: []
+    next_task: ""
+  - id: 6
+    name: Egypt and MENA Pilot
+    status: NOT_STARTED
+    entry_criteria: ["phase_05_verified"]
+    exit_criteria: []
+    evidence: []
+    blockers: []
+    next_task: ""
+  - id: 7
+    name: AI-Native Platform
+    status: NOT_STARTED
+    entry_criteria: ["phase_06_verified_or_flagged_spike_rules"]
+    exit_criteria: []
+    evidence: []
+    blockers: []
+    next_task: ""
+  - id: 8
+    name: Automation and Omnichannel
+    status: NOT_STARTED
+    entry_criteria: ["phase_07_verified"]
+    exit_criteria: []
+    evidence: []
+    blockers: []
+    next_task: ""
+  - id: 9
+    name: POS and Industry Packs
+    status: NOT_STARTED
+    entry_criteria: ["phase_08_verified"]
+    exit_criteria: []
+    evidence: []
+    blockers: []
+    next_task: ""
+  - id: 10
+    name: B2B and International
+    status: NOT_STARTED
+    entry_criteria: ["phase_09_verified"]
+    exit_criteria: []
+    evidence: []
+    blockers: []
+    next_task: ""
+  - id: 11
+    name: Developer Platform and Marketplace
+    status: NOT_STARTED
+    entry_criteria: ["phase_10_verified"]
+    exit_criteria: []
+    evidence: []
+    blockers: []
+    next_task: ""
+  - id: 12
+    name: Buyer Network
+    status: NOT_STARTED
+    entry_criteria: ["phase_11_verified"]
+    exit_criteria: []
+    evidence: []
+    blockers: []
+    next_task: ""
+  - id: 13
+    name: Enterprise and Scale
+    status: NOT_STARTED
+    entry_criteria: ["phase_12_verified"]
+    exit_criteria: []
+    evidence: []
+    blockers: []
+    next_task: ""
