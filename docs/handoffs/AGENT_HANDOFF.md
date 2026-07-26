@@ -73,4 +73,7 @@ See `docs/status/DECISIONS_NEEDED.md` (Supabase apply auth, Stripe E2E, Next aud
 - Weakening security tests to get green
 
 ## Committed / pushed
-Update after final git push in this session.
+- Commits: `386ae03`, `d8688cb`, `51bcabf`, `b1ae0dd`, `1884b27`
+- Pushed: **Yes** to `origin/main`
+- Sync: `0 0` after push
+- HEAD: `1884b27`
