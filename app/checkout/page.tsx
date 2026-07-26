@@ -1,239 +1,159 @@
 "use client";
 
 import { useCart } from "@/context/CartContext";
-import { useState, useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+
+function useIsClient() {
+  return useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false
+  );
+}
 
 export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[#020617] text-white flex items-center justify-center">
+          <p className="text-white/70">Loading checkout...</p>
+        </main>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
+  );
+}
+
+function CheckoutContent() {
   const { items, clearCart, addToCart } = useCart();
   const router = useRouter();
-
   const searchParams = useSearchParams();
   const selectedPlan = searchParams.get("plan");
-
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const planDetails: Record<string, { name: string; price: number }> = {
-    starter: { name: "Starter", price: 29 },
-    pro: { name: "Pro", price: 69 },
-    enterprise: { name: "Enterprise", price: 129 },
-  };
-
-  const plan = selectedPlan ? planDetails[selectedPlan] : null;
-  const selectedPlanKey = selectedPlan ?? null;
+  const mounted = useIsClient();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!selectedPlanKey) return;
+    if (!selectedPlan) return;
+    const planId = selectedPlan.toLowerCase();
+    if (!["starter", "pro", "enterprise"].includes(planId)) return;
 
-    const details = planDetails[selectedPlanKey];
-    if (!details) return;
+    const desiredId = `plan-${planId}`;
+    const existingPlan = items.find((i) => i.id.startsWith("plan-"));
+    if (existingPlan?.id === desiredId) return;
 
-    const desiredName = details.name + " Plan";
-
-    // If the same plan is already in cart, do nothing
-    const existingPlan = items.find((i) => i.name.includes("Plan"));
-    if (existingPlan && existingPlan.name === desiredName) {
-      return;
-    }
-
-    // Keep non-plan items
-    const nonPlanItems = items.filter((i) => !i.name.includes("Plan"));
-
-    // Reset cart ONLY if there was a different plan present
+    const nonPlanItems = items.filter((i) => !i.id.startsWith("plan-"));
     if (existingPlan) {
       clearCart();
-      nonPlanItems.forEach((item) => {
-        addToCart({ name: item.name, price: item.price });
-      });
+      nonPlanItems.forEach((item) =>
+        addToCart({ id: item.id, name: item.name, price: item.price })
+      );
     }
 
-    // Add selected plan (once)
-    addToCart({ name: desiredName, price: details.price });
-  }, [selectedPlanKey]);
+    const labels: Record<string, { name: string; price: number }> = {
+      starter: { name: "Starter Plan", price: 29 },
+      pro: { name: "Pro Plan", price: 69 },
+      enterprise: { name: "Enterprise Plan", price: 129 },
+    };
+    const details = labels[planId]!;
+    addToCart({ id: desiredId, name: details.name, price: details.price });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional one-shot plan sync
+  }, [selectedPlan]);
 
-  // split items (memoized)
-  const planItems = useMemo(
-    () => items.filter((item) => item.name.includes("Plan")),
+  const total = useMemo(
+    () => items.reduce((sum, item) => sum + item.price * (item.quantity ?? 1), 0),
     [items]
   );
-
-  const productItems = useMemo(
-    () => items.filter((item) => !item.name.includes("Plan")),
-    [items]
-  );
-
-  // totals (memoized)
-  const subscriptionTotal = useMemo(
-    () =>
-      planItems.reduce(
-        (sum, item) => sum + item.price * (item.quantity ?? 1),
-        0
-      ),
-    [planItems]
-  );
-
-  const oneTimeTotal = useMemo(
-    () =>
-      productItems.reduce(
-        (sum, item) => sum + item.price * (item.quantity ?? 1),
-        0
-      ),
-    [productItems]
-  );
-
-  const total = subscriptionTotal + oneTimeTotal;
-
-  const [loading, setLoading] = useState(false);
 
   async function handleCheckout() {
     try {
       setLoading(true);
+      setError(null);
+      const supabase = createSupabaseBrowserClient();
       const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-
-      if (!user) {
-        alert("You must be logged in");
-        router.push("/auth");
+      if (!data.session?.user) {
+        router.push("/auth?next=/checkout");
         return;
       }
 
-      localStorage.setItem("checkout_cart", JSON.stringify(items));
+      const lines = items.map((item) => ({
+        id: item.id,
+        quantity: item.quantity ?? 1,
+        kind: item.id.startsWith("plan-")
+          ? ("plan" as const)
+          : ("product" as const),
+      }));
 
       const response = await fetch("/api/checkout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ items, user_id: user.id }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lines }),
       });
 
-      const text = await response.text();
-      console.log("RAW RESPONSE:", text);
-
+      const payload = await response.json();
       if (!response.ok) {
-        console.error("Checkout API Error:", text);
-        alert(`Checkout failed: ${text}`);
-        throw new Error("Checkout failed");
+        throw new Error(payload.error || "Checkout failed");
       }
 
-      const responseData = JSON.parse(text);
-      console.log("SUCCESS:", responseData);
-
-      // If Stripe URL exists → redirect
-      if (responseData.url) {
-        window.location.href = responseData.url;
+      if (payload.url) {
+        window.location.href = payload.url;
         return;
       }
-
-      // Otherwise show success (your current API)
-      alert("Order placed successfully ✅");
-
-    } catch (error) {
-      console.error("Checkout error:", error);
-      alert("Checkout failed ❌");
+      throw new Error("Missing Stripe checkout URL");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Checkout failed");
     } finally {
       setLoading(false);
     }
   }
 
-  if (!mounted) {
-    return null;
-  }
+  if (!mounted) return null;
 
   return (
     <main className="min-h-screen bg-[#020617] text-white px-6 py-32">
-      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-3xl font-semibold mb-2">Checkout</h1>
+        <p className="text-white/60 mb-8">
+          You will complete payment securely on Stripe. Card details are never
+          collected on this page.
+        </p>
 
-        {/* LEFT - FORM */}
-        <div>
-          <h1 className="text-3xl font-semibold mb-6">Checkout</h1>
-
-          <div className="space-y-4">
-            <input placeholder="Full Name" className="w-full p-3 rounded-lg bg-white/10 outline-none" />
-            <input placeholder="Email" className="w-full p-3 rounded-lg bg-white/10 outline-none" />
-            <input placeholder="Card Number" className="w-full p-3 rounded-lg bg-white/10 outline-none" />
-
-            <div className="flex gap-4">
-              <input placeholder="MM/YY" className="w-full p-3 rounded-lg bg-white/10 outline-none" />
-              <input placeholder="CVC" className="w-full p-3 rounded-lg bg-white/10 outline-none" />
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT - SUMMARY */}
-        <div className="bg-white/5 p-6 rounded-2xl">
-          <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-
-          {/* Subscription */}
-          {planItems.length > 0 && (
-            <div className="mb-4">
-              <p className="text-xs uppercase tracking-wide text-white/50 mb-2">Subscription</p>
-              <div className="space-y-3">
-                {mounted && planItems.map((item, index) => (
-                  <div key={`plan-${index}`} className="flex justify-between text-sm">
-                    <span>{item.name} × {item.quantity ?? 1}</span>
-                    <span>${item.price * (item.quantity ?? 1)} / mo</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* One-time products */}
-          {productItems.length > 0 && (
-            <div>
-              <p className="text-xs uppercase tracking-wide text-white/50 mb-2">One-time</p>
-              <div className="space-y-3">
-                {mounted && productItems.map((item, index) => (
-                  <div key={`prod-${index}`} className="flex justify-between text-sm">
-                    <span>{item.name} × {item.quantity ?? 1}</span>
-                    <span>${item.price * (item.quantity ?? 1)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="mt-6 border-t border-white/10 pt-4 space-y-3">
-
-            {/* Due today */}
-            <div className="flex justify-between text-sm">
-              <span>Due today</span>
-              <span className="font-medium">
-                {mounted ? `$${oneTimeTotal}` : "$0"}
-              </span>
-            </div>
-
-            {/* Subscription */}
-            {subscriptionTotal > 0 && (
-              <div className="flex justify-between text-sm">
-                <span>Subscription (monthly)</span>
-                <span className="font-medium">
-                  {mounted ? `$${subscriptionTotal}` : "$0"} / mo
+        <div className="bg-white/5 p-6 rounded-2xl space-y-3">
+          {items.length === 0 ? (
+            <p className="text-white/60">Your cart is empty.</p>
+          ) : (
+            items.map((item) => (
+              <div key={item.id} className="flex justify-between text-sm">
+                <span>
+                  {item.name} × {item.quantity ?? 1}
                 </span>
+                <span>${item.price * (item.quantity ?? 1)}</span>
               </div>
-            )}
+            ))
+          )}
 
-            {/* Grand total (optional visual emphasis) */}
-            <div className="flex justify-between text-base font-semibold pt-3 border-t border-white/10">
-              <span>Total</span>
-              <span>{mounted ? `$${total}` : "$0"}</span>
-            </div>
-
+          <div className="flex justify-between text-base font-semibold pt-3 border-t border-white/10">
+            <span>Estimated total</span>
+            <span>${total}</span>
           </div>
+          <p className="text-xs text-white/45">
+            Final amount is calculated on the server from the product catalog.
+          </p>
+
+          {error && <p className="text-red-400 text-sm">{error}</p>}
 
           <button
+            type="button"
+            disabled={loading || items.length === 0}
             onClick={handleCheckout}
-            className="mt-6 w-full bg-white text-black py-3 rounded-full font-medium"
+            className="mt-4 w-full bg-white text-black py-3 rounded-full font-medium disabled:opacity-50"
           >
-            {loading ? "Processing..." : "Place Order"}
+            {loading ? "Redirecting..." : "Continue to Stripe"}
           </button>
         </div>
-
       </div>
     </main>
   );

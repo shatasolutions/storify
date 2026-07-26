@@ -1,32 +1,28 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { AuthError, requireUser } from "@/lib/auth";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { logError } from "@/lib/logger";
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(req.url);
-    const user_id = searchParams.get("user_id");
-
-    if (!user_id) {
-      return NextResponse.json({ error: "Missing user_id" }, { status: 400 });
-    }
-
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
+    const user = await requireUser();
+    const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from("orders")
-      .select("*")
-      .eq("user_id", user_id)
-      .order("id", { ascending: false });
+      .select("id, items, total_minor, currency, status, created_at, stripe_session_id")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      logError("orders_list_failed", { error: error.message, userId: user.id });
+      return NextResponse.json({ error: "Failed to load orders" }, { status: 500 });
     }
 
-    return NextResponse.json(data || []);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ orders: data ?? [] });
+  } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

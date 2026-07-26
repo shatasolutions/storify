@@ -1,80 +1,91 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
+import { z } from "zod";
+import { AuthError, requireUser } from "@/lib/auth";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { logError } from "@/lib/logger";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const cartItemSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  price: z.number().nonnegative(),
+  quantity: z.number().int().min(1).max(99),
+});
 
-// GET cart
-export async function GET(req: Request) {
-  const cookieStore = cookies();
-  const accessToken = cookieStore.get("sb-access-token")?.value;
+const saveSchema = z.object({
+  items: z.array(cartItemSchema),
+});
 
-  if (!accessToken) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { data: userData, error: userError } = await supabase.auth.getUser(accessToken);
-
-  if (userError || !userData?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const user_id = userData.user.id;
-
+export async function GET() {
   try {
+    const user = await requireUser();
+    const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from("carts")
       .select("items")
-      .eq("user_id", user_id)
-      .single();
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-    if (error && error.code !== "PGRST116") {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      logError("cart_get_failed", { error: error.message, userId: user.id });
+      return NextResponse.json({ error: "Failed to load cart" }, { status: 500 });
     }
 
-    return NextResponse.json(data?.items || []);
+    return NextResponse.json({ items: data?.items ?? [] });
   } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    logError("cart_get_exception", { error: String(err) });
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
-// SAVE cart
 export async function POST(req: Request) {
-  const cookieStore = cookies();
-  const accessToken = cookieStore.get("sb-access-token")?.value;
-
-  if (!accessToken) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { data: userData, error: userError } = await supabase.auth.getUser(accessToken);
-
-  if (userError || !userData?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const user_id = userData.user.id;
-
   try {
-    const { items } = await req.json();
+    const user = await requireUser();
+    const body = saveSchema.parse(await req.json());
+    const supabase = await createSupabaseServerClient();
 
-    if (!items) {
-      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
-    }
-
-    const { error } = await supabase
-      .from("carts")
-      .upsert({ user_id, items, updated_at: new Date().toISOString() });
+    const { error } = await supabase.from("carts").upsert(
+      {
+        user_id: user.id,
+        items: body.items,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    );
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      logError("cart_save_failed", { error: error.message, userId: user.id });
+      return NextResponse.json({ error: "Failed to save cart" }, { status: 500 });
     }
 
+    return NextResponse.json({ success: true, items: body.items });
+  } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    if (err instanceof z.ZodError) {
+      return NextResponse.json({ error: "Invalid cart payload" }, { status: 400 });
+    }
+    logError("cart_save_exception", { error: String(err) });
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}
+
+export async function DELETE() {
+  try {
+    const user = await requireUser();
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase.from("carts").delete().eq("user_id", user.id);
+    if (error) {
+      return NextResponse.json({ error: "Failed to clear cart" }, { status: 500 });
+    }
     return NextResponse.json({ success: true });
   } catch (err) {
+    if (err instanceof AuthError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
