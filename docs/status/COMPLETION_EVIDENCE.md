@@ -36,5 +36,15 @@ Test output · build output · commit hash · migration file · RLS test · scre
 | Stripe CLI E2E | — | **BLOCKED_EXTERNAL** |
 | npm audit (omit=dev) | 3 high via Next transitive postcss/sharp | Documented; force bump deferred |
 
-## Phase status
-Phase 01 = **PARTIAL** until live Supabase + Stripe proofs land.
+## Phase 01 evidence log (2026-07-26 continued)
+| Gate | Evidence | Result |
+|------|----------|--------|
+| `npm run dev` | `/` and `/api/health` HTTP 200 on :3010 | Pass (nanoid closed) |
+| PGlite migration+RLS | `tests/rls.pglite.test.ts` 4/4 | Pass |
+| Stripe signature crypto | `tests/stripe-webhook.crypto.test.ts` | Pass |
+| Webhook route replay | `tests/webhook-route.test.ts` | Pass |
+| Full suite | 33 tests; build Next 16.2.12 | Pass |
+| Remote Supabase apply | MCP timeout; no Storify `.env.local` | **HUMAN** |
+| Stripe CLI E2E | No keys; CLI install/API 403 | **HUMAN** |
+| GitHub Actions install | OAuth missing `workflow` scope | **HUMAN** |
+| sharp advisory | Next 16.2 still pulls vulnerable sharp | Deferred (no safe bump) |

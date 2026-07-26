@@ -1,5 +1,11 @@
 # Status Changelog
 
+## 2026-07-26 (continued)
+- Dev server nanoid issue closed; Next bumped to 16.2.12.
+- PGlite RLS + Stripe webhook crypto/route tests added (33 tests).
+- Phase 01 remains **PARTIAL** — remote Supabase / Stripe CLI / Actions require human auth unlock.
+- Phase 02+ still **NOT_STARTED**.
+
 ## 2026-07-26
 - Phase 00 marked **VERIFIED** (`ea68d30` on `origin/main`).
 - Phase 01 Rescue and Security implemented code-side: build/tsc/lint/test/build green.

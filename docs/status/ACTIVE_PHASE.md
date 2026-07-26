@@ -6,13 +6,13 @@
 |-------|-------|
 | Active phase | **01 — Rescue and Security** |
 | Status | `PARTIAL` |
-| Objective | Buildable, typed, linted, schema-owned, authz-safe commerce prototype |
-| Current epic | External verification (Supabase apply + Stripe webhook E2E + CI on GitHub) |
-| Current task | Apply baseline migration to a safe Supabase project; confirm webhook with Stripe CLI |
-| Entry criteria | Phase 00 VERIFIED (`ea68d30` on `origin/main`) |
-| Exit gate | Remaining external proofs before `VERIFIED` |
-| Blockers | Live Supabase/Stripe verification; optional workflow-scope for CI publish |
-| Exact next action | Apply Phase 01 migration to non-prod Supabase and verify signed webhook end-to-end |
+| Objective | Close remaining live Supabase / Stripe / GitHub Actions gates |
+| Current epic | Human credential unlock → remote proofs → VERIFIED |
+| Current task | Waiting on GitHub `workflow` scope, Supabase staging access, Stripe test keys/CLI |
+| Entry criteria | Phase 00 VERIFIED |
+| Exit gate | Live migration+RLS on Supabase staging; Stripe CLI E2E; Actions green |
+| Blockers | See CURRENT_STATE.md human-only list |
+| Exact next action | Human: `gh auth refresh -h github.com -s repo,workflow,read:org` then reconnect Supabase MCP and add Stripe test secrets to `.env.local` |
 
 Phase 00 status: **VERIFIED**.
-Phase 02+: **NOT_STARTED** (do not start).
+Phase 02+: **NOT_STARTED** (entry blocked until Phase 01 VERIFIED).
