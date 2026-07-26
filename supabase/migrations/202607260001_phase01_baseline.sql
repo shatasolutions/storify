@@ -44,6 +44,11 @@ alter table public.carts enable row level security;
 alter table public.orders enable row level security;
 alter table public.stripe_events enable row level security;
 
+alter table public.profiles force row level security;
+alter table public.carts force row level security;
+alter table public.orders force row level security;
+alter table public.stripe_events force row level security;
+
 -- Profiles: users manage own row
 drop policy if exists profiles_select_own on public.profiles;
 create policy profiles_select_own on public.profiles
