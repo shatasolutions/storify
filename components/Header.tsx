@@ -2,35 +2,39 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useSyncExternalStore } from "react";
 import { Sparkles, ShoppingCart, Globe, BarChart3, CreditCard, Megaphone, Mail, Tag, LineChart, Wallet, Receipt, Percent } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+
+function useIsClient() {
+  return useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false
+  );
+}
 
 export default function Header() {
   const [productsOpen, setProductsOpen] = useState(false);
   const [solutionsOpen, setSolutionsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { items } = useCart();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsClient();
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // --- Hover delay for Products dropdown ---
-  let closeTimeout: any;
   function openProducts() {
-    clearTimeout(closeTimeout);
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
     setProductsOpen(true);
   }
   function closeProducts() {
-    closeTimeout = setTimeout(() => {
+    closeTimeoutRef.current = setTimeout(() => {
       setProductsOpen(false);
     }, 120);
   }
 
   const glowRef = useRef<HTMLDivElement | null>(null);
 
-  const itemRefs = useRef<HTMLDivElement[]>([]);
+  const itemRefs = useRef<(HTMLElement | null)[]>([]);
 
   // --- For neural cursor interaction ---
   const lastPos = useRef({ x: 0, y: 0, time: 0 });
@@ -80,7 +84,7 @@ export default function Header() {
     lastPos.current = { x, y, time: now };
   }
 
-  function handleItemMove(e: React.MouseEvent<HTMLDivElement>, index: number) {
+  function handleItemMove(e: React.MouseEvent<HTMLElement>, index: number) {
     const el = itemRefs.current[index];
     if (!el) return;
 
@@ -199,20 +203,33 @@ export default function Header() {
                       className="pointer-events-none absolute inset-0 bg-gradient-to-br from-cyan-400/5 via-transparent to-purple-400/5"
                     />
                     <div className="pointer-events-none absolute inset-0 opacity-[0.04] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
-                    {[...Array(12)].map((_, i) => (
+                    {[
+                      [12, 18, 4.2],
+                      [28, 64, 5.1],
+                      [41, 22, 4.8],
+                      [55, 78, 6.0],
+                      [67, 35, 4.5],
+                      [73, 58, 5.4],
+                      [19, 82, 4.9],
+                      [88, 14, 5.7],
+                      [34, 47, 4.3],
+                      [61, 11, 5.2],
+                      [8, 51, 4.6],
+                      [79, 71, 5.8],
+                    ].map(([top, left, duration], i) => (
                       <motion.span
                         key={i}
                         className="pointer-events-none absolute h-1 w-1 rounded-full bg-white/20"
                         style={{
-                          top: `${Math.random() * 100}%`,
-                          left: `${Math.random() * 100}%`,
+                          top: `${top}%`,
+                          left: `${left}%`,
                         }}
                         animate={{
                           y: [0, -10, 0],
                           opacity: [0.2, 0.6, 0.2],
                         }}
                         transition={{
-                          duration: 4 + Math.random() * 3,
+                          duration,
                           repeat: Infinity,
                           ease: "easeInOut",
                         }}
@@ -243,8 +260,10 @@ export default function Header() {
                             <motion.div key={name} variants={itemVariants}>
                               <Link
                                 href={`/product/${name.toLowerCase().replace(/\s+/g, "-")}`}
-                                ref={(el) => { if (el) itemRefs.current[index] = el as any; }}
-                                onMouseMove={(e) => handleItemMove(e as any, index)}
+                                ref={(el) => {
+                                  itemRefs.current[index] = el;
+                                }}
+                                onMouseMove={(e) => handleItemMove(e, index)}
                                 onMouseLeave={() => handleItemLeave(index)}
                                 className="group relative z-10 flex items-center gap-3 cursor-pointer rounded-xl p-3 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-white/[0.03]"
                               >
@@ -274,8 +293,10 @@ export default function Header() {
                               <motion.div key={name} variants={itemVariants}>
                                 <Link
                                   href={`/product/${name.toLowerCase().replace(/\s+/g, "-")}`}
-                                  ref={(el) => { if (el) itemRefs.current[globalIndex] = el as any; }}
-                                  onMouseMove={(e) => handleItemMove(e as any, globalIndex)}
+                                  ref={(el) => {
+                                    itemRefs.current[globalIndex] = el;
+                                  }}
+                                  onMouseMove={(e) => handleItemMove(e, globalIndex)}
                                   onMouseLeave={() => handleItemLeave(globalIndex)}
                                   className="group relative z-10 flex items-center gap-3 cursor-pointer rounded-xl p-3 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-white/[0.03]"
                                 >
@@ -302,8 +323,10 @@ export default function Header() {
                               <motion.div key={name} variants={itemVariants}>
                                 <Link
                                   href={`/product/${name.toLowerCase().replace(/\s+/g, "-")}`}
-                                  ref={(el) => { if (el) itemRefs.current[index + 30] = el as any; }}
-                                  onMouseMove={(e) => handleItemMove(e as any, index + 30)}
+                                  ref={(el) => {
+                                    itemRefs.current[index + 30] = el;
+                                  }}
+                                  onMouseMove={(e) => handleItemMove(e, index + 30)}
                                   onMouseLeave={() => handleItemLeave(index + 30)}
                                   className="group relative z-10 flex items-center gap-3 cursor-pointer rounded-xl p-3 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-white/[0.03]"
                                 >
@@ -325,8 +348,10 @@ export default function Header() {
                               <motion.div key={name} variants={itemVariants}>
                                 <Link
                                   href={`/product/${name.toLowerCase().replace(/\s+/g, "-")}`}
-                                  ref={(el) => { if (el) itemRefs.current[index + 40] = el as any; }}
-                                  onMouseMove={(e) => handleItemMove(e as any, index + 40)}
+                                  ref={(el) => {
+                                    itemRefs.current[index + 40] = el;
+                                  }}
+                                  onMouseMove={(e) => handleItemMove(e, index + 40)}
                                   onMouseLeave={() => handleItemLeave(index + 40)}
                                   className="group relative z-10 flex items-center gap-3 cursor-pointer rounded-xl p-3 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bg-white/[0.03]"
                                 >
@@ -412,7 +437,7 @@ export default function Header() {
                         <p className="text-sm font-semibold text-white">AI Content</p>
                         <p className="mt-2 text-sm text-white/55">Generate product pages, FAQs, and SEO-ready content.</p>
                       </Link>
-                      <Link href="/services" className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:bg-white/[0.06]">
+                      <Link href="/store" className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:bg-white/[0.06]">
                         <p className="text-sm font-semibold text-white">Commerce Tools</p>
                         <p className="mt-2 text-sm text-white/55">Explore the core products and storefront tools.</p>
                       </Link>
@@ -460,10 +485,19 @@ export default function Header() {
             >
               Sign In
             </Link>
-            <button className="relative overflow-hidden rounded-full bg-white px-5 py-2 text-black font-medium transition hover:scale-105 active:scale-95 duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]">
+            <Link
+              href="/auth"
+              className="relative overflow-hidden rounded-full bg-white px-5 py-2 text-black font-medium transition hover:scale-105 active:scale-95 duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            >
               <span className="absolute inset-0 bg-gradient-to-r from-cyan-400/30 to-purple-400/30 opacity-0 transition hover:opacity-100" />
               <span className="relative">Get Started</span>
-            </button>
+            </Link>
+            <Link
+              href="/dashboard"
+              className="hidden rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10 md:block"
+            >
+              Orders
+            </Link>
             <button
               type="button"
               aria-label="Toggle menu"
@@ -493,8 +527,8 @@ export default function Header() {
                 >
                   Store
                 </Link>
-                <Link href="/services" className="rounded-xl px-3 py-2 text-white/80 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-white/8 hover:text-white">
-                  Services
+                <Link href="/store" className="rounded-xl px-3 py-2 text-white/80 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-white/8 hover:text-white">
+                  Commerce Tools
                 </Link>
                 <a href="#" className="rounded-xl px-3 py-2 text-white/80 transition duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-white/8 hover:text-white">
                   Solutions

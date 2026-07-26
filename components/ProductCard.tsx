@@ -31,9 +31,17 @@ function TiltCard({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function ProductCard({ product }: any) {
+type ProductCardProps = {
+  product: {
+    slug: string;
+    name: string;
+    price: string | number;
+  };
+};
+
+export default function ProductCard({ product }: ProductCardProps) {
   return (
-    <Link href={`/product/${product.slug}`} className="group">
+    <Link href={`/store/${product.slug}`} className="group">
       <TiltCard>
         <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition group-hover:bg-white/[0.05]">
 

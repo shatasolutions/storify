@@ -2,13 +2,11 @@
 
 import {
   motion,
-  AnimatePresence,
   useMotionTemplate,
   useMotionValue,
   useSpring,
 } from "framer-motion";
 import Link from "next/link";
-import { useState } from "react";
 import type { MouseEvent, ReactNode } from "react";
 
 const fadeUp = {
@@ -296,76 +294,7 @@ function HeroObject() {
   );
 }
 
-type NavDropdownProps = {
-  open: boolean;
-};
-
-function NavDropdown({ open }: NavDropdownProps) {
-  return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0, y: 12, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 12, scale: 0.98 }}
-          transition={{ duration: 0.18 }}
-          className="absolute left-1/2 top-full z-50 mt-4 w-[520px] -translate-x-1/2 rounded-[1.5rem] border border-white/10 bg-[#0b1220]/95 p-5 shadow-[0_20px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl"
-        >
-          <div className="grid gap-4 md:grid-cols-2">
-            <a
-              href="#"
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:bg-white/[0.06]"
-            >
-              <p className="text-sm font-semibold text-white">Store Builder</p>
-              <p className="mt-2 text-sm text-white/55">
-                Build premium storefronts with modern layouts and high-conversion
-                design.
-              </p>
-            </a>
-
-            <a
-              href="#"
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:bg-white/[0.06]"
-            >
-              <p className="text-sm font-semibold text-white">AI Content</p>
-              <p className="mt-2 text-sm text-white/55">
-                Generate product pages, structured copy, FAQs, and SEO-ready
-                content.
-              </p>
-            </a>
-
-            <a
-              href="#"
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:bg-white/[0.06]"
-            >
-              <p className="text-sm font-semibold text-white">Automation</p>
-              <p className="mt-2 text-sm text-white/55">
-                Connect workflows, fulfillment, orders, and future dropshipping
-                systems.
-              </p>
-            </a>
-
-            <a
-              href="#"
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:bg-white/[0.06]"
-            >
-              <p className="text-sm font-semibold text-white">SEO Control</p>
-              <p className="mt-2 text-sm text-white/55">
-                Manage metadata, site structure, schema, and scalable growth
-                pages.
-              </p>
-            </a>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
-
 export default function HomePage() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [solutionsOpen, setSolutionsOpen] = useState(false);
-
   return (
     <main className="min-h-screen bg-[#020617] text-white">
       <section className="relative overflow-hidden border-b border-white/10 pt-32">
@@ -958,29 +887,6 @@ export default function HomePage() {
           </div>
         </motion.div>
       </section>
-
-      <footer className="border-t border-white/10 bg-[#01050d] px-6 py-10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-center text-sm text-white/45 md:flex-row md:text-left">
-          <div className="flex items-center gap-3">
-            <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-cyan-400 to-purple-500" />
-            <span className="font-medium text-white/75">Storify</span>
-          </div>
-
-          <div>© 2026 Storify. The AI Commerce Platform.</div>
-
-          <div className="flex gap-6">
-            <a href="#" className="transition hover:text-white">
-              Privacy
-            </a>
-            <a href="#" className="transition hover:text-white">
-              Terms
-            </a>
-            <Link href="/product/demo" className="transition hover:text-white">
-              Demo
-            </Link>
-          </div>
-        </div>
-      </footer>
     </main>
   );
 }
