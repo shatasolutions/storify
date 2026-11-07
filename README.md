@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Storify
 
-## Getting Started
+An early-stage personal project by [Mostafa Shata](https://github.com/shatasolutions): an
+AI-native, multi-tenant commerce platform built with Next.js, Supabase and Stripe.
 
-First, run the development server:
+> **Not a Shata Solutions product, and not production-ready.** Shata Solutions' products and
+> engineering live at [github.com/shata-solutions](https://github.com/shata-solutions).
+
+## Status
+
+Phase 00 (governance) is verified. Phase 01 (rescue and security) is partial: local build,
+row-level-security isolation tests and Stripe webhook tests pass, while live staging
+database, payment and CI gates are still open. Later phases have not started. The current,
+evidence-backed state is kept in [`docs/status/`](docs/status/), starting with
+[`CURRENT_STATE.md`](docs/status/CURRENT_STATE.md).
+
+## Run it locally
 
 ```bash
+npm ci
+cp .env.example .env.local   # fill in your own Supabase and Stripe test values
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Command | What it does |
+| --- | --- |
+| `npm test` | Unit and isolation tests (Vitest) |
+| `npm run typecheck` | TypeScript, no emit |
+| `npm run lint` | ESLint |
+| `npm run docs:validate` | Checks the project documentation structure |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Documentation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [`AGENTS.md`](AGENTS.md) — product definition and the working contract for contributors
+- [`docs/`](docs/) — architecture, decisions (ADRs), security notes and the master plan
